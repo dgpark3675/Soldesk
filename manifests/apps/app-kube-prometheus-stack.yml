@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: 63.2.0      # 예시. 운영은 버전 고정 권장
+    targetRevision: 63.2.0      
     helm:
       valueFiles:
         - values-kps.yaml

@@ -5,13 +5,13 @@ metadata:
   namespace: monitoring
   annotations:
     kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/scheme: internal
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-path: /login
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
 spec:
   rules:
-    - http:   # host 없이도 ALB DNS로 접근 가능
+    - http:   
         paths:
           - path: /
             pathType: Prefix
