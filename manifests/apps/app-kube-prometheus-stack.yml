@@ -8,65 +8,64 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: 63.2.0      
+    targetRevision: 63.2.0  
     helm:
       values: |
         fullnameOverride: kps
 
-grafana:
-  adminPassword: 1q2w3e!
-  service:
-    type: ClusterIP
-  persistence:
-    enabled: true
-    type: sts
-    size: 10Gi
-    storageClassName: gp3
-  defaultDashboardsTimezone: Asia/Seoul
-  ingress:
-    enabled: false  # ALB Ingress는 별도 파일에서 관리
+        grafana:
+          adminPassword: 1q2w3e!        
+          service:
+            type: ClusterIP
+          persistence:
+            enabled: true
+            type: sts
+            size: 10Gi
+            storageClassName: gp3            
+          defaultDashboardsTimezone: Asia/Seoul
+          ingress:
+            enabled: false                   # 인그레스는 별도 파일로 관리
 
-prometheus:
-  prometheusSpec:
-    retention: 15d
-    retentionSize: "15GB"
-    externalLabels:
-      cluster: prod-eks
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: gp3
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 20Gi
-    scrapeInterval: 30s
-    evaluationInterval: 30s
-    # ServiceMonitor 선택기 비워두면 전체 인식(라벨 강제 불필요)
-    serviceMonitorNamespaceSelector: {}
-    serviceMonitorSelector: {}
-    podMonitorNamespaceSelector: {}
-    podMonitorSelector: {}
+        prometheus:
+          prometheusSpec:
+            retention: 15d
+            retentionSize: "20GB"
+            externalLabels:
+              cluster: prod-eks              # 사람이 보기 좋은 태그(실제 EKS 이름과 달라도 됨)
+            scrapeInterval: 30s
+            evaluationInterval: 30s
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: gp3      
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 30Gi
+            serviceMonitorNamespaceSelector: {}
+            serviceMonitorSelector: {}
+            podMonitorNamespaceSelector: {}
+            podMonitorSelector: {}
 
-alertmanager:
-  config:
-    global:
-      resolve_timeout: 5m
-      time_zone: Asia/Seoul
-    route:
-      receiver: "null"  # 현재 알림 비활성화
-    receivers:
-      - name: "null"
+        alertmanager:
+          config:
+            global:
+              resolve_timeout: 5m
+              time_zone: Asia/Seoul
+            route:
+              receiver: "null"               # 알림 비활성(추후 Slack/Webhook 추가)
+            receivers:
+              - name: "null"
 
-kube-state-metrics:
-  rbac:
-    create: true
+        kube-state-metrics:
+          rbac:
+            create: true
 
-nodeExporter:
-  enabled: true
+        nodeExporter:
+          enabled: true
 
   destination:
-    server: https://kubernetes.default.svc
+    server: https://kubernetes.default.svc   # 같은(기존) 클러스터에 배포
     namespace: monitoring
   syncPolicy:
     automated:

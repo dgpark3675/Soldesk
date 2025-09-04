@@ -17,6 +17,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: kps-grafana
+                name: kps-grafana  #fullnameOverride: kps prometheus 에서 받기
                 port:
                   number: 80
