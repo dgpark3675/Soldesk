@@ -14,7 +14,7 @@ $games = [];
 $sql = "SELECT g.title, g.image_url
         FROM games g
         JOIN favorites f ON g.title = f.game_title
-	WHERE f.username = ?";
+        WHERE f.username = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $username);
 $stmt->execute();
@@ -105,4 +105,3 @@ document.querySelectorAll('.photo-box').forEach(box=>{
 
 </body>
 </html>
-

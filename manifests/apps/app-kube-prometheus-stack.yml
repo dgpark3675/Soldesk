@@ -1,0 +1,79 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-kube-prometheus-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 63.2.0      # 예시. 운영은 버전 고정 권장
+    helm:
+      valueFiles:
+        - values-kps.yaml
+
+grafana:
+  adminPassword: 1q2w3e!
+  service:
+    type: ClusterIP
+  persistence:
+    enabled: true
+    type: sts
+    size: 10Gi
+    storageClassName: gp3
+  defaultDashboardsTimezone: Asia/Seoul
+  ingress:
+    enabled: false  # ALB Ingress는 별도 파일에서 관리
+
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    retentionSize: "15GB"
+    externalLabels:
+      cluster: prod-eks
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    # ServiceMonitor 선택기 비워두면 전체 인식(라벨 강제 불필요)
+    serviceMonitorNamespaceSelector: {}
+    serviceMonitorSelector: {}
+    podMonitorNamespaceSelector: {}
+    podMonitorSelector: {}
+
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+      time_zone: Asia/Seoul
+    route:
+      receiver: "null"  # 현재 알림 비활성화
+    receivers:
+      - name: "null"
+
+kube-state-metrics:
+  rbac:
+    create: true
+
+nodeExporter:
+  enabled: true
+
+
+
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
