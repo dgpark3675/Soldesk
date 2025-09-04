@@ -65,9 +65,6 @@ kube-state-metrics:
 nodeExporter:
   enabled: true
 
-
-
-
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

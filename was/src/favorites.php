@@ -33,26 +33,43 @@ if ($result && $result->num_rows > 0) {
 <title>즐겨찾기 - SOL드아웃</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Noto+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
 <style>
-body { margin:0; font-family: 'Noto Sans KR', sans-serif; background:#f5f1e6; color:#2e1f0f; }
-header, footer { background:#2e1f0f; color:#f5f1e6; padding:12px 50px; position:sticky; top:0; display:flex; align-items:center; justify-content:space-between; }
-header nav { display:flex; align-items:center; gap:20px; }
+body { margin:0; font-family: 'Noto Sans KR', sans-serif; background:#f5f1e6; color:#2e1f0f; overflow-x:hidden; }
+
+/* 헤더 & 네비 스타일 */
+header { position:sticky; top:0; display:flex; justify-content:space-between; align-items:center; padding:12px 50px; background:rgba(46,31,15,0.9); backdrop-filter:blur(6px); box-shadow:0 2px 6px rgba(0,0,0,0.15); z-index:10; }
+.logo-link img { height:55px; }
+nav { display:flex; gap:30px; align-items:center; }
+nav a { text-decoration:none; font-family:'Playfair Display',serif; font-size:1.1rem; color:#f5f1e6; transition:color 0.3s; }
+nav a:hover { color:#c9a34f; }
+
+/* 컨테이너 */
 .container { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:40px; padding:60px 80px; max-width:1400px; margin:0 auto; justify-content:center; }
-.photo-box { width:260px; height:360px; border-radius:12px; overflow:hidden; background:#fff; box-shadow:0 6px 15px rgba(0,0,0,0.15); text-align:center; position:relative; cursor:pointer; transition: transform 0.3s; display:flex; flex-direction:column; margin:0 auto; }
-.photo-box:hover { transform: translateY(-8px); }
-.photo-box img { width:100%; height:240px; object-fit:cover; background:#fff; display:block; } /* index.php와 동일 크기 */
-.photo-title { font-family:'Playfair Display', serif; font-size:1.2rem; padding:10px; background:#2e1f0f; height:auto; display:flex; align-items:center; justify-content:center; text-align:center; color:#f5f1e6; }
-.favorite-btn { position:absolute; top:10px; right:10px; font-size:1.5rem; color:red; cursor:pointer; user-select:none; }
+
+/* 카드 스타일 */
+.photo-box { width:260px; height:360px; border-radius:12px; overflow:hidden; background:#fff; box-shadow:0 6px 15px rgba(0,0,0,0.15); text-align:center; position:relative; cursor:pointer; transition: transform 0.3s, box-shadow 0.3s; display:flex; flex-direction:column; margin:0 auto; }
+.photo-box:hover { transform: translateY(-8px) scale(1.03); box-shadow: 0 8px 16px rgba(0,0,0,0.2), 0 12px 24px rgba(0,0,0,0.15); }
+.photo-box img { width:100%; height:240px; object-fit:cover; background:#fff; display:block; }
+.photo-title { font-family:'Playfair Display', serif; font-size:1.2rem; padding:10px; background:#2e1f0f; color:#f5f1e6; display:flex; align-items:center; justify-content:center; text-align:center; }
+
+/* 즐겨찾기 버튼 */
+.favorite-btn { position:absolute; top:10px; right:10px; font-size:1.5rem; color:#e74c3c; cursor:pointer; user-select:none; transition: transform 0.2s; }
+.favorite-btn:hover { transform:scale(1.2); }
+
+/* 푸터 */
+footer { text-align:center; padding:25px; font-size:0.9rem; color:#c9a34f; font-family:'Playfair Display',serif; background:#2e1f0f; }
 </style>
 </head>
 <body>
 
 <header>
-<a href="index.php"><img src="https://images-dbtest.s3.ap-northeast-2.amazonaws.com/Lavel.png" alt="SOL드아웃 라벨" style="height:55px;"></a>
-<nav>
-<span>안녕하세요, <?= htmlspecialchars($username) ?>님</span>
-<a href="logout.php">로그아웃</a>
-<a href="index.php">게임목록</a>
-</nav>
+  <a href="index.php" class="logo-link">
+    <img src="https://images-dbtest.s3.ap-northeast-2.amazonaws.com/Lavel.png" alt="SOL드아웃 라벨">
+  </a>
+  <nav>
+    <span style="color:#f5f1e6;">안녕하세요, <?= htmlspecialchars($username) ?>님</span>
+    <a href="logout.php">로그아웃</a>
+    <a href="index.php">게임목록</a>
+  </nav>
 </header>
 
 <main>
@@ -78,13 +95,12 @@ header nav { display:flex; align-items:center; gap:20px; }
 </footer>
 
 <script>
-// 즐겨찾기 클릭 시 즉시 제거 + 서버 요청 백그라운드
+// 즐겨찾기 클릭 시 즉시 제거 + 서버 요청
 document.querySelectorAll('.favorite-btn').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
-        e.stopPropagation(); // 카드 클릭 이벤트 방지
+        e.stopPropagation();
         const box = btn.closest('.photo-box');
-        box.remove(); // 클릭 즉시 카드 제거
-
+        box.remove();
         const title = box.getAttribute('data-title');
         fetch('favorite_toggle.php', {
             method: 'POST',
