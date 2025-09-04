@@ -10,8 +10,8 @@ spec:
     chart: kube-prometheus-stack
     targetRevision: 63.2.0      
     helm:
-      valueFiles:
-        - values-kps.yaml
+      values: |
+        fullnameOverride: kps
 
 grafana:
   adminPassword: 1q2w3e!
