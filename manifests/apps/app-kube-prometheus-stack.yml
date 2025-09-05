@@ -24,7 +24,7 @@ spec:
           ingress:
             enabled: false                   # 인그레스는 별도 파일로 관리
           nodeSelector:                        # --set grafana.nodeSelector.role=monitoring
-            role: monitoring
+            eks.amazonaws.com/nodegroup: Monitoring
           tolerations:                         # --set grafana.tolerations[0].*
             - key: role
               operator: Equal
@@ -44,7 +44,7 @@ spec:
             podMonitorNamespaceSelector: {}
             podMonitorSelector: {}
             nodeSelector:                      # --set prometheus.prometheusSpec.nodeSelector.role=monitoring
-              role: monitoring
+              eks.amazonaws.com/nodegroup: Monitoring
             tolerations:                       # --set prometheus.prometheusSpec.tolerations[0].*
               - key: role
                 operator: Equal
@@ -54,7 +54,7 @@ spec:
         alertmanager:
           alertmanagerSpec:
             nodeSelector:                      # --set alertmanager.nodeSelector.role=monitoring
-              role: monitoring
+              eks.amazonaws.com/nodegroup: Monitoring
             tolerations:                       # --set alertmanager.tolerations[0].*
               - key: role
                 operator: Equal
