@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: ""                 # ← 버전 핀 해제(항상 최신). 원하면 나중에 고정
+    targetRevision: "77.5.0"                 # ← 버전 핀 해제(항상 최신). 원하면 나중에 고정
     helm:
       values: |
         fullnameOverride: kps
