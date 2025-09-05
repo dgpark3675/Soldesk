@@ -8,54 +8,53 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: ""  
+    targetRevision: ""                 # ← 버전 핀 해제(항상 최신). 원하면 나중에 고정
     helm:
       values: |
-        fullnameOverride: kps-grafana
+        fullnameOverride: kps
 
         grafana:
           adminUser: admin
-          adminPassword: "1q2w3e4r!"       
+          adminPassword: "1q2w3e4r!"
           service:
             type: ClusterIP
           persistence:
-            enabled: false
+            enabled: false            # EmptyDir(휘발성)
           defaultDashboardsTimezone: Asia/Seoul
           ingress:
-            enabled: false                   # 인그레스는 별도 파일로 관리
-          nodeSelector:                        # --set grafana.nodeSelector.role=monitoring
+            enabled: false            # Ingress는 별도 파일로 관리
+          nodeSelector:
             eks.amazonaws.com/nodegroup: Monitoring
-          tolerations:                         # --set grafana.tolerations[0].*
+          tolerations:
             - key: role
               operator: Equal
               value: monitoring
               effect: NoSchedule
 
-
-
         prometheus:
           prometheusSpec:
             externalLabels:
-              cluster: prod-eks              # 사람이 보기 좋은 태그(실제 EKS 이름과 달라도 됨)
+              cluster: prod-eks
             scrapeInterval: 30s
             evaluationInterval: 30s
+            # storageSpec 없음 = EmptyDir(휘발성)
             serviceMonitorNamespaceSelector: {}
             serviceMonitorSelector: {}
             podMonitorNamespaceSelector: {}
             podMonitorSelector: {}
-            nodeSelector:                      # --set prometheus.prometheusSpec.nodeSelector.role=monitoring
+            nodeSelector:
               eks.amazonaws.com/nodegroup: Monitoring
-            tolerations:                       # --set prometheus.prometheusSpec.tolerations[0].*
+            tolerations:
               - key: role
                 operator: Equal
                 value: monitoring
                 effect: NoSchedule
-         
+
         alertmanager:
           alertmanagerSpec:
-            nodeSelector:                      # --set alertmanager.nodeSelector.role=monitoring
+            nodeSelector:
               eks.amazonaws.com/nodegroup: Monitoring
-            tolerations:                       # --set alertmanager.tolerations[0].*
+            tolerations:
               - key: role
                 operator: Equal
                 value: monitoring
@@ -68,18 +67,17 @@ spec:
               receiver: "null"
             receivers:
               - name: "null"
-        
-        
-        # 기본 컴포넌트 활성
-        kube-state-metrics:
-          rbac:
-            create: true
 
-        nodeExporter:
-          enabled: true
+        # DaemonSet가 테인트 노드에도 뜨도록
+        prometheus-node-exporter:
+          tolerations:
+            - key: role
+              operator: Equal     # 또는 Exists
+              value: monitoring
+              effect: NoSchedule
 
   destination:
-    server: https://kubernetes.default.svc   # 같은(기존) 클러스터에 배포
+    server: https://kubernetes.default.svc
     namespace: monitoring
   syncPolicy:
     automated:
@@ -87,4 +85,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-

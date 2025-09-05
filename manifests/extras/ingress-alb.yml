@@ -10,13 +10,14 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-path: /login
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
 spec:
+  ingressClassName: alb
   rules:
-    - http:   
+    - http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: kps-grafana  #fullnameOverride: kps prometheus 에서 받기
+                name: kps-grafana
                 port:
                   number: 80
