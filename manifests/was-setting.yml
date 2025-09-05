@@ -5,8 +5,8 @@ metadata:
   labels:
     app: private-app
 spec:
-  replicas: 2
-  revisionHistoryLimit: 3
+  replicas: 1
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
       app: private-app
@@ -57,8 +57,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: private-app
-  minReplicas: 2
-  maxReplicas: 4
+  minReplicas: 1
+  maxReplicas: 2
   metrics:
     - type: Resource
       resource:
