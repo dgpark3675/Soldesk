@@ -40,7 +40,7 @@ kind: Service
 metadata:
   name: public-service
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: dgpark.cloud
+    external-dns.alpha.kubernetes.io/hostname: dgpark.cloud, www.dgpark.cloud
 spec:
   type: LoadBalancer
   selector:
