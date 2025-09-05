@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: monitoring-kube-prometheus-stack
-  namespace: argocd
+  namespace: argo-cd
 spec:
   project: default
   source:
@@ -14,49 +14,63 @@ spec:
         fullnameOverride: kps
 
         grafana:
-          adminPassword: 1q2w3e!        
+          adminUser: admin
+          adminPassword: "1q2w3e4r!"       
           service:
             type: ClusterIP
           persistence:
-            enabled: true
-            type: sts
-            size: 10Gi
-            storageClassName: gp3            
+            enabled: false
           defaultDashboardsTimezone: Asia/Seoul
           ingress:
             enabled: false                   # 인그레스는 별도 파일로 관리
+          nodeSelector:                        # --set grafana.nodeSelector.role=monitoring
+            role: monitoring
+          tolerations:                         # --set grafana.tolerations[0].*
+            - key: role
+              operator: Equal
+              value: monitoring
+              effect: NoSchedule
+
+
 
         prometheus:
           prometheusSpec:
-            retention: 15d
-            retentionSize: "20GB"
             externalLabels:
               cluster: prod-eks              # 사람이 보기 좋은 태그(실제 EKS 이름과 달라도 됨)
             scrapeInterval: 30s
             evaluationInterval: 30s
-            storageSpec:
-              volumeClaimTemplate:
-                spec:
-                  storageClassName: gp3      
-                  accessModes: ["ReadWriteOnce"]
-                  resources:
-                    requests:
-                      storage: 30Gi
             serviceMonitorNamespaceSelector: {}
             serviceMonitorSelector: {}
             podMonitorNamespaceSelector: {}
             podMonitorSelector: {}
-
+            nodeSelector:                      # --set prometheus.prometheusSpec.nodeSelector.role=monitoring
+              role: monitoring
+            tolerations:                       # --set prometheus.prometheusSpec.tolerations[0].*
+              - key: role
+                operator: Equal
+                value: monitoring
+                effect: NoSchedule
+         
         alertmanager:
+          alertmanagerSpec:
+            nodeSelector:                      # --set alertmanager.nodeSelector.role=monitoring
+              role: monitoring
+            tolerations:                       # --set alertmanager.tolerations[0].*
+              - key: role
+                operator: Equal
+                value: monitoring
+                effect: NoSchedule
           config:
             global:
               resolve_timeout: 5m
               time_zone: Asia/Seoul
             route:
-              receiver: "null"               # 알림 비활성(추후 Slack/Webhook 추가)
+              receiver: "null"
             receivers:
               - name: "null"
-
+        
+        
+        # 기본 컴포넌트 활성
         kube-state-metrics:
           rbac:
             create: true
