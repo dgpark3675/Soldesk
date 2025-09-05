@@ -8,10 +8,13 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: "77.5.0"                 # ← 버전 핀 해제(항상 최신). 원하면 나중에 고정
+    targetRevision: "77.5.0"                 
     helm:
       values: |
         fullnameOverride: kps
+
+        crds:
+          enabled: false
 
         grafana:
           adminUser: admin
@@ -20,7 +23,6 @@ spec:
             type: LoadBalancer
             service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
             service.beta.kubernetes.io/aws-load-balancer-internal: "true"   # 내부 NLB
-            
           persistence:
             enabled: false            # EmptyDir(휘발성)
           defaultDashboardsTimezone: Asia/Seoul
@@ -88,3 +90,9 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jqPathExpressions:
+        - .metadata.annotations
