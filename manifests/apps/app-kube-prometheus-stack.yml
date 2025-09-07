@@ -24,7 +24,10 @@ spec:
             service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
             service.beta.kubernetes.io/aws-load-balancer-internal: "true"   # 내부 NLB
           persistence:
-            enabled: false            # EmptyDir(휘발성)
+            enabled: true
+            type: pvc 
+            size: 5Gi
+            storageClassName: gp3 
           defaultDashboardsTimezone: Asia/Seoul
           ingress:
             enabled: false            # Ingress는 별도 파일로 관리
@@ -42,7 +45,15 @@ spec:
               cluster: prod-eks
             scrapeInterval: 30s
             evaluationInterval: 30s
-            # storageSpec 없음 = EmptyDir(휘발성)
+            retention: 5d                         # 5일 보존 
+            storageSpec:
+              volumeClaimTemplate:
+               spec: 
+                  storageClassName: gp3
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                   requests:
+                    storage: 5Gi
             serviceMonitorNamespaceSelector: {}
             serviceMonitorSelector: {}
             podMonitorNamespaceSelector: {}
