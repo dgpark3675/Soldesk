@@ -1,1 +1,1 @@
-# Summar Solt Kick Final Project
+# Summer Salt Kick Final Project
