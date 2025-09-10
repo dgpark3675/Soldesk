@@ -150,14 +150,7 @@ spec:
               operator: Equal
               value: Monitoring
               effect: NoSchedule
-            - key: role
-              operator: Equal
-              value: web
-              effect: NoSchedule
-              - key: role
-              operator: Equal
-              value: was
-              effect: NoSchedule
+            
         
         prometheusOperator:
           nodeSelector:
