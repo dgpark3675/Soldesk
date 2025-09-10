@@ -10,6 +10,7 @@ spec:
     chart: kube-prometheus-stack
     targetRevision: "77.5.0"
     helm:
+      skipCrds: true
       values: |
         # ---- ① 클러스터/서비스 기본 알람 7종 ----
         additionalPrometheusRulesMap:
@@ -69,7 +70,7 @@ spec:
                       description: "Some pods are not Ready."
 
         crds:
-          enabled: true
+          enabled: false
 
         grafana:
           adminUser: admin
@@ -142,11 +143,40 @@ spec:
                     send_resolved: true
 
         prometheus-node-exporter:
+          nodeSelector:
+            eks.amazonaws.com/nodegroup: Monitoring
+          tolerations:
+            - key: role
+              operator: Equal
+              value: Monitoring
+              effect: NoSchedule
+            - key: role
+              operator: Equal
+              value: web
+              effect: NoSchedule
+              - key: role
+              operator: Equal
+              value: was
+              effect: NoSchedule
+        
+        prometheusOperator:
+          nodeSelector:
+            eks.amazonaws.com/nodegroup: Monitoring
           tolerations:
             - key: role
               operator: Equal
               value: monitoring
               effect: NoSchedule
+
+        kube-state-metrics:
+          nodeSelector:
+            eks.amazonaws.com/nodegroup: Monitoring
+          tolerations:
+            - key: role
+              operator: Equal
+              value: monitoring
+              effect: NoSchedule
+
 
   destination:
     server: https://kubernetes.default.svc
