@@ -2,16 +2,71 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: monitoring-kube-prometheus-stack
-  namespace: argo-cd
+  namespace: argo-cd    
 spec:
   project: default
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: "77.5.0"                 
+    targetRevision: "77.5.0"
     helm:
       values: |
-        fullnameOverride: kps
+        # ---- ① 클러스터/서비스 기본 알람 7종 ----
+        additionalPrometheusRulesMap:
+          cluster-service-basics:
+            groups:
+              - name: cluster.service.basic.rules
+                interval: 1m
+                rules:
+                  - alert: NodeCPUHigh
+                    expr: (1 - avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 > 85
+                    for: 5m
+                    labels: { severity: warning }
+                    annotations:
+                      summary: "High CPU on {{ $labels.instance }}"
+                      description: "Node CPU usage >85% for 5m."
+                  - alert: NodeMemoryHigh
+                    expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+                    for: 5m
+                    labels: { severity: critical }
+                    annotations:
+                      summary: "High memory on {{ $labels.instance }}"
+                      description: "Node memory usage >90% for 5m."
+                  - alert: NodeDiskUsageHigh
+                    expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"})) * 100 > 90
+                    for: 5m
+                    labels: { severity: critical }
+                    annotations:
+                      summary: "Disk usage >90% on {{ $labels.instance }} {{ $labels.mountpoint }}"
+                      description: "Filesystem nearing full."
+                  - alert: PendingPods
+                    expr: sum by (namespace) (kube_pod_status_phase{phase="Pending"}) > 0
+                    for: 10m
+                    labels: { severity: warning }
+                    annotations:
+                      summary: "Pending Pods detected"
+                      description: "There are pods pending scheduling in {{ $labels.namespace }}."
+                  - alert: DeploymentUnavailableReplicas
+                    expr: kube_deployment_status_replicas_unavailable > 0
+                    for: 5m
+                    labels: { severity: critical }
+                    annotations:
+                      summary: "Unavailable replicas in {{ $labels.namespace }}/{{ $labels.deployment }}"
+                      description: "Deployment has unavailable replicas."
+                  - alert: ContainerRestartsHigh
+                    expr: sum by (namespace, pod, container) (rate(kube_pod_container_status_restarts_total[5m])) > 0.1
+                    for: 10m
+                    labels: { severity: warning }
+                    annotations:
+                      summary: "High restarts for {{ $labels.namespace }}/{{ $labels.pod }}"
+                      description: "Container restarts > 0.1/5m (~1.2/hour)."
+                  - alert: PodsNotReady
+                    expr: sum by (namespace, pod) (kube_pod_status_ready{condition="false"}) > 0
+                    for: 5m
+                    labels: { severity: warning }
+                    annotations:
+                      summary: "NotReady pods in {{ $labels.namespace }}"
+                      description: "Some pods are not Ready."
 
         crds:
           enabled: false
@@ -22,12 +77,12 @@ spec:
           service:
             type: LoadBalancer
             service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-            service.beta.kubernetes.io/aws-load-balancer-internal: "true"   # 내부 NLB
+            service.beta.kubernetes.io/aws-load-balancer-internal: "true"
           persistence:
-            enabled: false            # EmptyDir(휘발성)
+            enabled: false
           defaultDashboardsTimezone: Asia/Seoul
           ingress:
-            enabled: false            # Ingress는 별도 파일로 관리
+            enabled: false
           nodeSelector:
             eks.amazonaws.com/nodegroup: Monitoring
           tolerations:
@@ -42,7 +97,6 @@ spec:
               cluster: prod-eks
             scrapeInterval: 30s
             evaluationInterval: 30s
-            # storageSpec 없음 = EmptyDir(휘발성)
             serviceMonitorNamespaceSelector: {}
             serviceMonitorSelector: {}
             podMonitorNamespaceSelector: {}
@@ -55,6 +109,7 @@ spec:
                 value: monitoring
                 effect: NoSchedule
 
+        # ---- ② Alertmanager 이메일 설정 ----
         alertmanager:
           alertmanagerSpec:
             nodeSelector:
@@ -64,20 +119,32 @@ spec:
                 operator: Equal
                 value: monitoring
                 effect: NoSchedule
+            secrets:
+              - alertmanager-smtp
           config:
             global:
               resolve_timeout: 5m
-              time_zone: Asia/Seoul
+              smtp_smarthost: "smtp.gmail.com:587"
+              smtp_from: "1559647@gmail.com"
+              smtp_auth_username: "1559647@gmail.com"
+              smtp_auth_password_file: "/etc/alertmanager/secrets/alertmanager-smtp/smtp-password"
+              smtp_require_tls: true
             route:
-              receiver: "null"
+              group_by: ["alertname"]
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 3h
+              receiver: "email-alert"
             receivers:
-              - name: "null"
+              - name: "email-alert"
+                email_configs:
+                  - to: "1559647@naver.com,jkbkk1023@naver.com"
+                    send_resolved: true
 
-        # DaemonSet가 테인트 노드에도 뜨도록
         prometheus-node-exporter:
           tolerations:
             - key: role
-              operator: Equal     # 또는 Exists
+              operator: Equal
               value: monitoring
               effect: NoSchedule
 
@@ -92,7 +159,7 @@ spec:
       - CreateNamespace=true
 
   ignoreDifferences:
-    - group: apiextensions.k8s.io   #CRD에 달린 annotation 차이를 무시
+    - group: apiextensions.k8s.io
       kind: CustomResourceDefinition
       jqPathExpressions:
         - .metadata.annotations
