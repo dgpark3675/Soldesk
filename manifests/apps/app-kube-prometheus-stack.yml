@@ -20,8 +20,8 @@ spec:
                 interval: 1m
                 rules:
                   - alert: NodeCPUHigh
-                    expr: (1 - avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 > 85
-                    for: 5m
+                    expr: (1 - avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 > 50
+                    for: 2m
                     labels: { severity: warning }
                     annotations:
                       summary: "High CPU on {{ $labels.instance }}"
