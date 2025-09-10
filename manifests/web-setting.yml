@@ -5,7 +5,7 @@ metadata:
   labels:
     app: public-app
 spec:
-  replicas: 1
+  replicas: 50
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -58,7 +58,7 @@ spec:
     kind: Deployment
     name: public-app
   minReplicas: 1
-  maxReplicas: 2
+  maxReplicas: 50
   metrics:
     - type: Resource
       resource:
