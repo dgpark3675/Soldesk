@@ -69,7 +69,7 @@ spec:
                       description: "Some pods are not Ready."
 
         crds:
-          enabled: false
+          enabled: true
 
         grafana:
           adminUser: admin
