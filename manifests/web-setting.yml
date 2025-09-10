@@ -62,10 +62,10 @@ spec:
   metrics:
     - type: Resource
       resource:
-        name: cpu
+        name: memory
         target:
           type: Utilization
-          averageUtilization: 60
+          averageUtilization: 70
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300   # 최근 5분 평균으로 판단
