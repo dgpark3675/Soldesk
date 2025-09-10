@@ -26,12 +26,7 @@ jobs:
       - name: Build and Push was image
         run: |
           IMAGE=dgpark3675/mywas:v${{ github.run_number }}
-          docker build \
-            --build-arg DB_HOST=${{ secrets.DB_HOST }} \
-            --build-arg DB_USER=${{ secrets.DB_USER }} \
-            --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            --build-arg DB_NAME=${{ secrets.DB_NAME }} \
-            -t $IMAGE ./was
+          docker build -t $IMAGE ./was
           docker push $IMAGE
           sed -i "s|image: .*/mywas:.*|image: $IMAGE|g" manifests/was-setting.yml
 
