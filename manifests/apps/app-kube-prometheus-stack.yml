@@ -167,7 +167,7 @@ spec:
           tolerations:
             - key: role
               operator: Equal
-              value: monitoring
+              value: Monitoring
               effect: NoSchedule
 
 
