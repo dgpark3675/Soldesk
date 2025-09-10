@@ -8,9 +8,10 @@ spec:
   source:
     repoURL: https://github.com/dgpark3675/Soldout.git
     targetRevision: main
-    path: manifests/monitoring/extras
+    path: manifests/apps
     directory:
-      recurse: true
+      recurse: false                            # 하위 폴더 까지 안 보게 
+      include: "app-kube-prometheus-stack.yml"
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
