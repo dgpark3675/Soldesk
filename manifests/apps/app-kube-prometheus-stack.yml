@@ -146,16 +146,23 @@ spec:
           tolerations:
             - key: role
               operator: Equal
-              value: monitoring
-              effect: NoSchedule
-            - key: role
-              operator: Equal
               value: was
               effect: NoSchedule
             - key: role
               operator: Equal
               value: web
               effect: NoSchedule
+
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: eks.amazonaws.com/nodegroup
+                    operator: In
+                    values:
+                      - Private-was
+                      - Public-web
         
         prometheusOperator:
           nodeSelector:
