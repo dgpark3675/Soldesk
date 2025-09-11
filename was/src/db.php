@@ -1,8 +1,8 @@
 <?php
-$host = "my-mariadb.cdyykgyowiim.ap-northeast-2.rds.amazonaws.com"
-$user = "admin"
-$pass = "1q2w3e4r!"
-$db   = "mydb"
+$host = "my-mariadb.cdyykgyowiim.ap-northeast-2.rds.amazonaws.com";
+$user = "admin";
+$pass = "1q2w3e4r!";
+$db   = "mydb";
 #테스트입니다.
 $conn = new mysqli($host, $user, $pass, $db);
 
