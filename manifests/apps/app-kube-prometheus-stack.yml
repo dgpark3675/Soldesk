@@ -69,6 +69,17 @@ spec:
                     annotations:
                       summary: "NotReady pods in {{ $labels.namespace }}"
                       description: "Some pods are not Ready."
+          email-pipeline-smoke:
+            groups:        
+              - name: email.pipeline.smoke
+                rules:
+                  - alert: EmailPipelineSmokeTest
+                    expr: vector(1)
+                    for: 1m
+                    labels: { severity: warning }
+                    annotations:
+                      summary: "Email pipeline smoke test"
+                      description: "Always-on test to verify Alertmanager email delivery."    
 
         crds:
           enabled: false
