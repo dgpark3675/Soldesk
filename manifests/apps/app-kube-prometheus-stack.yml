@@ -12,6 +12,7 @@ spec:
     helm:
       skipCrds: true
       values: |
+        fullnameOverride: kps
         # ---- ① 클러스터/서비스 기본 알람 7종 ----
         additionalPrometheusRulesMap:
           cluster-service-basics:
@@ -34,7 +35,7 @@ spec:
                       summary: "High memory on {{ $labels.instance }}"
                       description: "Node memory usage >90% for 5m."
                   - alert: NodeDiskUsageHigh
-                    expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"})) * 100 > 90
+                    expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"})) * 100 > 50
                     for: 5m
                     labels: { severity: critical }
                     annotations:
