@@ -143,11 +143,6 @@ spec:
                     send_resolved: true
 
         prometheus-node-exporter:
-          nodeSelector:
-            eks.amazonaws.com/nodegroup: Monitoring
-            eks.amazonaws.com/nodegroup: Private-was
-            eks.amazonaws.com/nodegroup: Public-web
-            eks.amazonaws.com/nodegroup: operator
           tolerations:
             - key: role
               operator: Equal
