@@ -145,12 +145,22 @@ spec:
         prometheus-node-exporter:
           nodeSelector:
             eks.amazonaws.com/nodegroup: Monitoring
+            eks.amazonaws.com/nodegroup: Private-was
+            eks.amazonaws.com/nodegroup: Public-web
+            eks.amazonaws.com/nodegroup: operator
           tolerations:
             - key: role
               operator: Equal
               value: monitoring
               effect: NoSchedule
-            
+            - key: role
+              operator: Equal
+              value: was
+              effect: NoSchedule
+            - key: role
+              operator: Equal
+              value: web
+              effect: NoSchedule
         
         prometheusOperator:
           nodeSelector:
