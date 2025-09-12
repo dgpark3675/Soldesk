@@ -1,4 +1,4 @@
-name: Slack Commit Notification (Threaded Multi-Commit)
+name: Slack Commit Notification
 
 on:
   push:
@@ -9,35 +9,22 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Set thread_ts file path
-        run: echo "THREAD_FILE=.slack_thread_ts" >> $GITHUB_ENV
-
-      # 루트 스레드 timestamp 가져오기 (없으면 새 메시지 생성)
-      - name: Get or create Slack thread
-        id: slack-thread
+      # 루트 메시지 보내기
+      - name: Send root message to Slack
+        id: slack-root
         run: |
-          if [ -f $THREAD_FILE ]; then
-            TS=$(cat $THREAD_FILE)
-          else
-            RESPONSE=$(curl -s -X POST -H 'Content-type: application/json' \
-              --data '{"text":"🚀 Commit log for *${{ github.repository }}*"}' \
-              ${{ secrets.SLACK_WEBHOOK_URL }})
-            TS=$(echo $RESPONSE | jq -r .ts)
-            echo $TS > $THREAD_FILE
-          fi
-          echo "ts=$TS" >> $GITHUB_OUTPUT
+          RESPONSE=$(curl -s -X POST -H 'Content-type: application/json' \
+            --data '{"text":"🚀 New push to *${{ github.repository }}* by *${{ github.actor }}*"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }})
+          # 루트 메시지 timestamp 추출
+          echo "ts=$(echo $RESPONSE | jq -r .ts)" >> $GITHUB_OUTPUT
 
-      # 여러 커밋 반복하여 스레드에 추가
-      - name: Post commits to Slack thread
+      # 스레드에 커밋 메시지 보내기
+      - name: Send commit details in thread
         run: |
-          for COMMIT_SHA in $(echo "${{ toJSON(github.event.commits) }}" | jq -r '.[].id'); do
-            MESSAGE=$(curl -s https://api.github.com/repos/${{ github.repository }}/commits/$COMMIT_SHA | jq -r '.commit.message')
-            URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/commits/$COMMIT_SHA | jq -r '.html_url')
-
-            curl -X POST -H 'Content-type: application/json' \
-            --data '{
-              "text": "*Branch:* ${{ github.ref_name }}\n*Actor:* ${{ github.actor }}\n*Commit:* '"$MESSAGE"'\n<'"$URL"'|View Commit>",
-              "thread_ts": "${{ steps.slack-thread.outputs.ts }}"
-            }' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
-          done
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{
+            "text": "Commit: ${{ github.event.head_commit.message }}\nURL: ${{ github.event.head_commit.url }}",
+            "thread_ts": "${{ steps.slack-root.outputs.ts }}"
+          }' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
