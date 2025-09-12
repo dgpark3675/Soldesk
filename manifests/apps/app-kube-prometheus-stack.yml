@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: monitoring-kube-prometheus-stack
-  namespace: argo-cd    
+  namespace: argo-cd   
 spec:
   project: default
   source:
@@ -10,19 +10,27 @@ spec:
     chart: kube-prometheus-stack
     targetRevision: "77.5.0"
     helm:
+      
+      skipCrds: false
       values: |
         fullnameOverride: kps
-       
+
+        # kube-prometheus-stack가 제공하는 CRDs 설치
         crds:
           enabled: true
+
+        # Alertmanager를 당분간 완전히 끔(중복/충돌 방지)
+        alertmanager:
+          enabled: false
 
         grafana:
           adminUser: admin
           adminPassword: "1q2w3e4r!"
           service:
             type: LoadBalancer
-            service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-            service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+            annotations:
+              service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+              service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
           persistence:
             enabled: false
           defaultDashboardsTimezone: Asia/Seoul
@@ -54,29 +62,28 @@ spec:
                 value: monitoring
                 effect: NoSchedule
 
-        
+        # ← 여기 'prometheus-node-exporter'의 값 경로가 중요합니다.
         prometheus-node-exporter:
-          nodeExporter:
-            tolerations:
-              - key: role
-                operator: Equal
-                value: was
-                effect: NoSchedule
-              - key: role
-                operator: Equal
-                value: web
-                effect: NoSchedule
-            affinity:
-              nodeAffinity:
-                requiredDuringSchedulingIgnoredDuringExecution:
-                  nodeSelectorTerms:
+          tolerations:
+            - key: role
+              operator: Equal
+              value: was
+              effect: NoSchedule
+            - key: role
+              operator: Equal
+              value: web
+              effect: NoSchedule
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
                   - matchExpressions:
-                    - key: eks.amazonaws.com/nodegroup
-                      operator: In
-                      values:
-                        - Private-was
-                        - Public-web
-        
+                      - key: eks.amazonaws.com/nodegroup
+                        operator: In
+                        values:
+                          - Private-was
+                          - Public-web
+
         prometheusOperator:
           nodeSelector:
             eks.amazonaws.com/nodegroup: Monitoring
@@ -94,7 +101,6 @@ spec:
               operator: Equal
               value: monitoring
               effect: NoSchedule
-
 
   destination:
     server: https://kubernetes.default.svc
