@@ -11,13 +11,13 @@ spec:
     targetRevision: "77.5.0"
     helm:
       
-      skipCrds: false
+      skipCrds: true
       values: |
         fullnameOverride: kps
 
         # kube-prometheus-stack가 제공하는 CRDs 설치
         crds:
-          enabled: true
+          enabled: false
 
         # Alertmanager를 당분간 완전히 끔(중복/충돌 방지)
         alertmanager:
