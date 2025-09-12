@@ -1,0 +1,16 @@
+name: Notify Slack on Push
+
+on:
+  push:
+    branches:
+      - main   # main 브랜치에 push될 때만 실행
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send message to Slack
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"🚀 New push to *main* branch in repo: $GITHUB_REPOSITORY by $GITHUB_ACTOR"}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
