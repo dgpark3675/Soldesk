@@ -20,7 +20,7 @@ jobs:
             TS=$(cat $THREAD_FILE)
           else
             RESPONSE=$(curl -s -X POST -H 'Content-type: application/json' \
-              --data '{"text":"🚀 Commit log for *${GITHUB_REPOSITORY}*"}' \
+              --data '{"text":"🚀 Commit log for *${{ github.repository }}*"}' \
               ${{ secrets.SLACK_WEBHOOK_URL }})
             TS=$(echo $RESPONSE | jq -r .ts)
             echo $TS > $THREAD_FILE
@@ -30,13 +30,13 @@ jobs:
       # 여러 커밋 반복하여 스레드에 추가
       - name: Post commits to Slack thread
         run: |
-          for COMMIT_SHA in $(echo "${GITHUB_EVENT_HEAD_COMMIT[*]}" | jq -r '.[].id'); do
-            MESSAGE=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/$COMMIT_SHA | jq -r '.commit.message')
-            URL=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/$COMMIT_SHA | jq -r '.html_url')
+          for COMMIT_SHA in $(echo "${{ toJSON(github.event.commits) }}" | jq -r '.[].id'); do
+            MESSAGE=$(curl -s https://api.github.com/repos/${{ github.repository }}/commits/$COMMIT_SHA | jq -r '.commit.message')
+            URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/commits/$COMMIT_SHA | jq -r '.html_url')
 
             curl -X POST -H 'Content-type: application/json' \
             --data '{
-              "text": "*Actor:* '${GITHUB_ACTOR}'\n*Commit:* '"$MESSAGE"'\n<'"$URL"'|View Commit>",
+              "text": "*Branch:* ${{ github.ref_name }}\n*Actor:* ${{ github.actor }}\n*Commit:* '"$MESSAGE"'\n<'"$URL"'|View Commit>",
               "thread_ts": "${{ steps.slack-thread.outputs.ts }}"
             }' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
