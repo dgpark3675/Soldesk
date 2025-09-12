@@ -132,7 +132,8 @@ spec:
                 operator: Equal
                 value: monitoring
                 effect: NoSchedule
-            # secrets:
+            secrets:
+              - slack-webhook-url
             #   - alertmanager-smtp
           config:
             # global:
@@ -164,7 +165,7 @@ spec:
                 slack_configs:
                   - send_resolved: true
                     channel: "#project-soldout"
-                    api_url: "${{ secrets.SLACK_WEBHOOK_URL }}"
+                    api_url: /etc/alertmanager/secrets/slack-webhook-url/slack-webhook-url
 
         prometheus-node-exporter:
           tolerations:
