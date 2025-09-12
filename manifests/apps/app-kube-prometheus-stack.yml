@@ -132,27 +132,39 @@ spec:
                 operator: Equal
                 value: monitoring
                 effect: NoSchedule
-            secrets:
-              - alertmanager-smtp
+            # secrets:
+            #   - alertmanager-smtp
           config:
-            global:
-              resolve_timeout: 5m
-              smtp_smarthost: "smtp.gmail.com:587"
-              smtp_from: "1559647@gmail.com"
-              smtp_auth_username: "1559647@gmail.com"
-              smtp_auth_password_file: "/etc/alertmanager/secrets/alertmanager-smtp/smtp-password"
-              smtp_require_tls: true
+            # global:
+            #   resolve_timeout: 5m
+            #   smtp_smarthost: "smtp.gmail.com:587"
+            #   smtp_from: "1559647@gmail.com"
+            #   smtp_auth_username: "1559647@gmail.com"
+            #   smtp_auth_password_file: "/etc/alertmanager/secrets/alertmanager-smtp/smtp-password"
+            #   smtp_require_tls: true
+            # route:
+            #   group_by: ["alertname"]
+            #   group_wait: 30s
+            #   group_interval: 5m
+            #   repeat_interval: 3h
+            #   receiver: "email-alert"
+            # receivers:
+            #   - name: "email-alert"
+            #     email_configs:
+            #       - to: "1559647@naver.com,jkbkk1023@naver.com"
+            #         send_resolved: true
             route:
               group_by: ["alertname"]
               group_wait: 30s
               group_interval: 5m
-              repeat_interval: 3h
-              receiver: "email-alert"
+              repeat_interval: 1h
+              receiver: "slack-notifications"
             receivers:
-              - name: "email-alert"
-                email_configs:
-                  - to: "1559647@naver.com,jkbkk1023@naver.com"
-                    send_resolved: true
+              - name: "slack-notifications"
+                slack_configs:
+                  - send_resolved: true
+                    channel: "#project-soldout"
+                    api_url: "https://hooks.slack.com/services/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"
 
         prometheus-node-exporter:
           tolerations:
