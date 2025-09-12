@@ -169,26 +169,31 @@ spec:
                     api_url: /etc/alertmanager/secrets/slack-webhook-url/slack-webhook-url
 
         prometheus-node-exporter:
-          tolerations:
-            - key: role
-              operator: Equal
-              value: was
-              effect: NoSchedule
-            - key: role
-              operator: Equal
-              value: web
-              effect: NoSchedule
-
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                - matchExpressions:
-                  - key: eks.amazonaws.com/nodegroup
-                    operator: In
-                    values:
-                      - Private-was
-                      - Public-web
+          nodeExporter:
+            tolerations:
+              - key: role
+                operator: Equal
+                value: was
+                effect: NoSchedule
+              - key: role
+                operator: Equal
+                value: web
+                effect: NoSchedule
+              - key: role
+                operator: Equal
+                value: monitoring
+                effect: NoSchedule
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                  - matchExpressions:
+                    - key: eks.amazonaws.com/nodegroup
+                      operator: In
+                      values:
+                        - Private-was
+                        - Public-web
+                        - Monitoring
         
         prometheusOperator:
           nodeSelector:
