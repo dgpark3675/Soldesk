@@ -10,7 +10,7 @@ spec:
     chart: kube-prometheus-stack
     targetRevision: "77.5.0"
     helm:
-      skipCrds: true
+      skipCrds: false
       values: |
         fullnameOverride: kps
         # ---- ① 클러스터/서비스 기본 알람 7종 ----
@@ -82,7 +82,7 @@ spec:
                       description: "Always-on test to verify Alertmanager email delivery."    
 
         crds:
-          enabled: false
+          enabled: true
 
         grafana:
           adminUser: admin
