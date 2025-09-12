@@ -179,10 +179,6 @@ spec:
                 operator: Equal
                 value: web
                 effect: NoSchedule
-              - key: role
-                operator: Equal
-                value: monitoring
-                effect: NoSchedule
             affinity:
               nodeAffinity:
                 requiredDuringSchedulingIgnoredDuringExecution:
@@ -193,7 +189,6 @@ spec:
                       values:
                         - Private-was
                         - Public-web
-                        - Monitoring
         
         prometheusOperator:
           nodeSelector:
