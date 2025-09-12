@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: monitoring-kube-prometheus-stack
-  namespace: argo-cd   
+  namespace: argo-cd
 spec:
   project: default
   source:
@@ -10,16 +10,16 @@ spec:
     chart: kube-prometheus-stack
     targetRevision: "77.5.0"
     helm:
-      
-      skipCrds: true
+      # ⬇️ 자동 CRD 설치 켠다
+      skipCrds: false
       values: |
         fullnameOverride: kps
 
-        # kube-prometheus-stack가 제공하는 CRDs 설치
+        # ⬇️ 차트가 제공하는 CRDs 설치(자동)
         crds:
-          enabled: false
+          enabled: true
 
-        # Alertmanager를 당분간 완전히 끔(중복/충돌 방지)
+        # Alertmanager는 일단 비활성(원하면 나중에 다시 켬)
         alertmanager:
           enabled: false
 
@@ -62,7 +62,7 @@ spec:
                 value: monitoring
                 effect: NoSchedule
 
-        # ← 여기 'prometheus-node-exporter'의 값 경로가 중요합니다.
+        # web/was 노드에만 node-exporter
         prometheus-node-exporter:
           tolerations:
             - key: role
@@ -111,10 +111,10 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true
+      - ServerSideApply=true   # ⬅️ last-applied 주석 없이 서버사이드 적용(용량 문제 예방)
 
   ignoreDifferences:
     - group: apiextensions.k8s.io
       kind: CustomResourceDefinition
       jqPathExpressions:
-        - .metadata.annotations
+        - .metadata.annotations    # ⬅️ CRD의 annotations 차이는 무시(Argo가 패치 안 하게)
