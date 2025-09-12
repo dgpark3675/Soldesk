@@ -28,9 +28,9 @@ spec:
           adminPassword: "1q2w3e4r!"
           service:
             type: LoadBalancer
-            annotations:
-              service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-              service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
+            # annotations:
+            #   service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+            #   service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
           persistence:
             enabled: false
           defaultDashboardsTimezone: Asia/Seoul
