@@ -10,12 +10,11 @@ spec:
     chart: kube-prometheus-stack
     targetRevision: "77.5.0"
     helm:
-      skipCrds: true
       values: |
         fullnameOverride: kps
        
         crds:
-          enabled: false
+          enabled: true
 
         grafana:
           adminUser: admin
