@@ -13,74 +13,7 @@ spec:
       skipCrds: true
       values: |
         fullnameOverride: kps
-        # ---- ① 클러스터/서비스 기본 알람 7종 ----
-        additionalPrometheusRulesMap:
-          cluster-service-basics:
-            groups:
-              - name: cluster.service.basic.rules
-                interval: 1m
-                rules:
-                  - alert: NodeCPUHigh
-                    expr: (1 - avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 > 50
-                    for: 2m
-                    labels: { severity: warning }
-                    annotations:
-                      summary: "High CPU on {{ $labels.instance }}"
-                      description: "Node CPU usage >85% for 5m."
-                  - alert: NodeMemoryHigh
-                    expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
-                    for: 5m
-                    labels: { severity: critical }
-                    annotations:
-                      summary: "High memory on {{ $labels.instance }}"
-                      description: "Node memory usage >90% for 5m."
-                  - alert: NodeDiskUsageHigh
-                    expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|overlay"})) * 100 > 50
-                    for: 5m
-                    labels: { severity: critical }
-                    annotations:
-                      summary: "Disk usage >90% on {{ $labels.instance }} {{ $labels.mountpoint }}"
-                      description: "Filesystem nearing full."
-                  - alert: PendingPods
-                    expr: sum by (namespace) (kube_pod_status_phase{phase="Pending"}) > 0
-                    for: 10m
-                    labels: { severity: warning }
-                    annotations:
-                      summary: "Pending Pods detected"
-                      description: "There are pods pending scheduling in {{ $labels.namespace }}."
-                  - alert: DeploymentUnavailableReplicas
-                    expr: kube_deployment_status_replicas_unavailable > 0
-                    for: 5m
-                    labels: { severity: critical }
-                    annotations:
-                      summary: "Unavailable replicas in {{ $labels.namespace }}/{{ $labels.deployment }}"
-                      description: "Deployment has unavailable replicas."
-                  - alert: ContainerRestartsHigh
-                    expr: sum by (namespace, pod, container) (rate(kube_pod_container_status_restarts_total[5m])) > 0.1
-                    for: 10m
-                    labels: { severity: warning }
-                    annotations:
-                      summary: "High restarts for {{ $labels.namespace }}/{{ $labels.pod }}"
-                      description: "Container restarts > 0.1/5m (~1.2/hour)."
-                  - alert: PodsNotReady
-                    expr: sum by (namespace, pod) (kube_pod_status_ready{condition="false"}) > 0
-                    for: 5m
-                    labels: { severity: warning }
-                    annotations:
-                      summary: "NotReady pods in {{ $labels.namespace }}"
-                      description: "Some pods are not Ready."
-          email-pipeline-smoke:
-            groups:        
-              - name: email.pipeline.smoke
-                rules:
-                  - alert: EmailPipelineSmokeTest
-                    expr: vector(1)
-                    for: 1m
-                    labels: { severity: warning }
-                    annotations:
-                      summary: "Email pipeline smoke test"
-                      description: "Always-on test to verify Alertmanager email delivery."    
-
+       
         crds:
           enabled: false
 
@@ -122,52 +55,7 @@ spec:
                 value: monitoring
                 effect: NoSchedule
 
-        # ---- ② Alertmanager 이메일 설정 ----
-        alertmanager:
-          enabled: true
-          alertmanagerSpec:
-            nodeSelector:
-              eks.amazonaws.com/nodegroup: Monitoring
-            tolerations:
-              - key: role
-                operator: Equal
-                value: monitoring
-                effect: NoSchedule
-            secrets:
-              - slack-webhook-url
-            #   - alertmanager-smtp
-          config:
-            # global:
-            #   resolve_timeout: 5m
-            #   smtp_smarthost: "smtp.gmail.com:587"
-            #   smtp_from: "1559647@gmail.com"
-            #   smtp_auth_username: "1559647@gmail.com"
-            #   smtp_auth_password_file: "/etc/alertmanager/secrets/alertmanager-smtp/smtp-password"
-            #   smtp_require_tls: true
-            # route:
-            #   group_by: ["alertname"]
-            #   group_wait: 30s
-            #   group_interval: 5m
-            #   repeat_interval: 3h
-            #   receiver: "email-alert"
-            # receivers:
-            #   - name: "email-alert"
-            #     email_configs:
-            #       - to: "1559647@naver.com,jkbkk1023@naver.com"
-            #         send_resolved: true
-            route:
-              group_by: ["alertname"]
-              group_wait: 30s
-              group_interval: 5m
-              repeat_interval: 1h
-              receiver: "slack-notifications"
-            receivers:
-              - name: "slack-notifications"
-                slack_configs:
-                  - send_resolved: true
-                    channel: "#project-soldout"
-                    api_url: /etc/alertmanager/secrets/slack-webhook-url/slack-webhook-url
-
+        
         prometheus-node-exporter:
           nodeExporter:
             tolerations:
