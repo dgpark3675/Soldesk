@@ -113,7 +113,8 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true   # ⬅️ last-applied 주석 없이 서버사이드 적용(용량 문제 예방)
       - RespectIgnoreDifferences=true
-      - DisableClientSideApplyMigration=true
+      - Validate=false
+      - SkipDryRunOnMissingResource=true
 
   ignoreDifferences:
     - group: apiextensions.k8s.io
