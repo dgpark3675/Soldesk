@@ -164,7 +164,7 @@ spec:
                 slack_configs:
                   - send_resolved: true
                     channel: "#project-soldout"
-                    api_url: "https://hooks.slack.com/services/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"
+                    api_url: "${{ secrets.SLACK_WEBHOOK_URL }}"
 
         prometheus-node-exporter:
           tolerations:
