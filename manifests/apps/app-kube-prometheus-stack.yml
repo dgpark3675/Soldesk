@@ -124,6 +124,7 @@ spec:
 
         # ---- ② Alertmanager 이메일 설정 ----
         alertmanager:
+          enabled: true
           alertmanagerSpec:
             nodeSelector:
               eks.amazonaws.com/nodegroup: Monitoring
