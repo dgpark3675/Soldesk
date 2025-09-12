@@ -1,18 +1,43 @@
-name: Notify Slack on Push
+name: Slack Commit Notification (Threaded Multi-Commit)
 
 on:
   push:
     branches:
-      - main   # main 브랜치에 push될 때만 실행
+      - main
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send message to Slack
+      - name: Set thread_ts file path
+        run: echo "THREAD_FILE=.slack_thread_ts" >> $GITHUB_ENV
+
+      # 루트 스레드 timestamp 가져오기 (없으면 새 메시지 생성)
+      - name: Get or create Slack thread
+        id: slack-thread
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{
-            "text": "🚀 *New push to branch '${{ github.ref_name }}'* in repo *${{ github.repository }}* by *${{ github.actor }}*\n> Commit message: ${{ github.event.head_commit.message }}\n> Commit URL: ${{ github.event.head_commit.url }}"
-          }' \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
+          if [ -f $THREAD_FILE ]; then
+            TS=$(cat $THREAD_FILE)
+          else
+            RESPONSE=$(curl -s -X POST -H 'Content-type: application/json' \
+              --data '{"text":"🚀 Commit log for *${GITHUB_REPOSITORY}*"}' \
+              ${{ secrets.SLACK_WEBHOOK_URL }})
+            TS=$(echo $RESPONSE | jq -r .ts)
+            echo $TS > $THREAD_FILE
+          fi
+          echo "ts=$TS" >> $GITHUB_OUTPUT
+
+      # 여러 커밋 반복하여 스레드에 추가
+      - name: Post commits to Slack thread
+        run: |
+          for COMMIT_SHA in $(echo "${GITHUB_EVENT_HEAD_COMMIT[*]}" | jq -r '.[].id'); do
+            MESSAGE=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/$COMMIT_SHA | jq -r '.commit.message')
+            URL=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/$COMMIT_SHA | jq -r '.html_url')
+
+            curl -X POST -H 'Content-type: application/json' \
+            --data '{
+              "text": "*Actor:* '${GITHUB_ACTOR}'\n*Commit:* '"$MESSAGE"'\n<'"$URL"'|View Commit>",
+              "thread_ts": "${{ steps.slack-thread.outputs.ts }}"
+            }' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+          done
