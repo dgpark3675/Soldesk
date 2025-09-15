@@ -46,6 +46,7 @@ spec:
 
         prometheus:
           prometheusSpec:
+            replicas: 2 
             externalLabels:
               cluster: prod-eks
             scrapeInterval: 30s
@@ -54,6 +55,24 @@ spec:
             serviceMonitorSelector: {}
             podMonitorNamespaceSelector: {}
             podMonitorSelector: {}
+            affinity: {}
+            topologySpreadConstraints:
+             # ① 노드 단위 분산
+              - maxSkew: 2
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: prometheus
+                    app.kubernetes.io/instance: kps-prometheus
+                     # ② 가용영역(AZ) 단위 분산
+              - maxSkew: 2
+                topologyKey: topology.kubernetes.io/zone
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: prometheus
+                    app.kubernetes.io/instance: kps-prometheus
             nodeSelector:
               eks.amazonaws.com/nodegroup: Monitoring
             tolerations:
