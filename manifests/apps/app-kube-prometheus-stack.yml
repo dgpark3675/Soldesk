@@ -11,13 +11,13 @@ spec:
     targetRevision: "77.6.2"
     helm:
       # ⬇️ 자동 CRD 설치 켠다
-      skipCrds: true
+      skipCrds: false
       values: |
         fullnameOverride: kps
 
         # ⬇️ 차트가 제공하는 CRDs 설치(자동)
         crds:
-          enabled: false
+          enabled: true
 
         # Alertmanager는 일단 비활성(원하면 나중에 다시 켬)
         alertmanager:
