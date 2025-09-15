@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: "77.5.0"
+    targetRevision: "77.6.2"
     helm:
       # ⬇️ 자동 CRD 설치 켠다
       skipCrds: true
@@ -45,7 +45,9 @@ spec:
               effect: NoSchedule
 
         prometheus:
+          enabled: true
           prometheusSpec:
+            version: v3.5.0
             replicas: 2 
             externalLabels:
               cluster: prod-eks
@@ -55,6 +57,7 @@ spec:
             serviceMonitorSelector: {}
             podMonitorNamespaceSelector: {}
             podMonitorSelector: {}
+            storageSpec: {} 
             affinity: {}
             topologySpreadConstraints:
              # ① 노드 단위 분산
