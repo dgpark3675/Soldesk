@@ -166,7 +166,7 @@ if(isset($_SESSION['username'])){
   document.body.classList.add("show-main");
 <?php endif; ?>
 
-  // ⭐ 즐겨찾기 클릭 이벤트
+  // ⭐ 즐겨찾기 클릭 이벤트 dsdasda
   document.querySelectorAll('.fav-btn').forEach(btn=>{
     btn.addEventListener('click',function(e){
       e.preventDefault();
