@@ -16,6 +16,7 @@ data:
     - recipients:
       - slack:alert
       triggers:
+      - on-sync-running
       - on-sync-status-unknown
       - on-sync-failed
       - on-health-degraded
