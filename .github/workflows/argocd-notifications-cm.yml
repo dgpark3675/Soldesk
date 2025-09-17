@@ -1,0 +1,27 @@
+name: Notify Slack on Push
+
+on:
+  push:
+    branches: [ "main" ]  # 모든 브랜치면 ['*']
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install jq (ensure available)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+
+      - name: Build payload & send to Slack
+        env:
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          MSG: ${{ github.event.head_commit.message }}
+          URL: ${{ github.event.head_commit.url }}
+          WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          text="🚀 *New push to* \`${BRANCH}\` in *${REPO}* by *${ACTOR}*\n• Message: ${MSG}\n• URL: ${URL}"
+          payload=$(jq -n --arg text "$text" '{text: $text}')
+          curl -X POST -H 'Content-type: application/json' --data "$payload" "$WEBHOOK"
