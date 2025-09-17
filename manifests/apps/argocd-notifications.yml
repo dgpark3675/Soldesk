@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argo-cd
+data:
+  # Slack Bot 방식 
+  service.slack: |
+    token: $slack-token           
+    username: Argo CD
+    icon: https://argocd-notifications.readthedocs.io/en/stable/assets/logo.png
+
+  # 전역 구독: 모든 앱 이벤트를 slack:alert 로 전송
+  # 웹훅도 함께 받고 싶으면 아래 recipients에 'webhook:slack_incoming' 한 줄 추가
+  subscriptions: |
+    - recipients:
+      - slack:alert
+      triggers:
+      - on-sync-status-unknown
+      - on-sync-failed
+      - on-health-degraded
+      - on-deployed
+      - on-sync-succeeded
