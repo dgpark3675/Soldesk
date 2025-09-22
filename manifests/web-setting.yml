@@ -40,7 +40,7 @@ kind: Service
 metadata:
   name: public-service
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: public-app
   ports:
